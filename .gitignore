@@ -1,0 +1,30 @@
+# Local data and credentials
+data/
+.env
+.env.*
+*.tif
+*.tiff
+*.parquet
+*.gpkg
+*.shp
+*.dbf
+*.shx
+
+# Generated and temporary artifacts
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.coverage
+htmlcov/
+out/qa*/
+out/qa_*/
+*.tmp
+*.log
+*.mp4
+*.zip
+
+# Editors and operating systems
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db

@@ -1,0 +1,11 @@
+{
+  "analysis_spec": "p ~ log10(pop_sum_subgroup) + log(n_events) + C(subgroup_type) + FE(mainshock_id)",
+  "n": 34,
+  "n_groups": 6,
+  "n_perm": 5000,
+  "observed_slope": -0.1952444057878651,
+  "p_value_two_sided": 0.005598880223955209,
+  "null_mean": 0.00040089933033733943,
+  "null_q025": -0.1343280501276959,
+  "null_q975": 0.14168563314757182
+}
