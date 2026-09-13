@@ -1,3 +1,97 @@
+# Multi-Scale Association Between Aftershock Decay and Population Exposure in Sichuan-Yunnan
+
+This repository contains a reproducible study for the disaster-governance and big-data domain. It estimates the Omori-Utsu decay parameter `p` for mainshock sequences in Sichuan-Yunnan from the USGS earthquake catalog, calculates population exposure within 10, 25, and 50 km using a population raster, and evaluates association robustness using fixed-effects regression, within-group permutation tests, uncertainty propagation, and Leave-One-Group-Out (LOGO) validation.
+
+## Key Findings
+
+- At the mainshock level, 50 km population exposure is positively correlated with `p`; however, the sample contains only eight mainshocks, so the statistical evidence is limited and does not support causal interpretation.
+- In the subgroup fixed-effects model, the population-exposure coefficient is negative. The mainshock-clustered bootstrap interval and within-mainshock permutation test support this association within the observed sample.
+- After propagating uncertainty in the estimated Omori parameters, the coefficient remains negative, although the result is still sensitive to the number of mainshocks, catalog completeness, and spatial scale.
+- LOGO Ridge outperforms the training-mean baseline, but the dataset is too small to justify complex models or deployment-level predictive claims.
+
+The full reasoning, formulas, figure interpretations, and limitations are provided in the [research report](docs/report.pdf) (Chinese).
+
+## Workflow
+
+1. Download mainshock and aftershock catalogs from USGS ComCat.
+2. Clean the catalog and filter it by the magnitude-of-completeness threshold `Mc` and start time `tmin`.
+3. Estimate Omori-Utsu parameters using point-process maximum likelihood and bootstrap resampling.
+4. Calculate population exposure for buffers, distance rings, directional groups, and adaptive depth subgroups.
+5. Run correlation analysis, mainshock fixed-effects regression, within-group permutation tests, uncertainty propagation, and mainshock influence analysis.
+6. Evaluate the training-mean baseline, OLS, and Ridge using Leave-One-Mainshock-Out LOGO validation.
+
+![Research workflow](out/fig_flow_diagram.png)
+
+## Repository Layout
+
+```text
+.
+├── 01_download_usgs.py ... 20_exposure_population.py  # Data acquisition and exposure
+├── 03_fit_omori.py                                    # Omori fitting and adaptive subgroups
+├── 31_robustness.py ... 37_mainshock_influence.py     # Statistical robustness analyses
+├── 40_ml_groupkfold.py                                # LOGO predictive evaluation
+├── analysis_core.py / omori_fit.py                    # Core analysis functions
+├── tests/                                             # Unit and consistency tests
+├── out/                                               # Selected results and figures
+└── docs/report.pdf                                    # Full Chinese report
+```
+
+## Setup and Reproduction
+
+Python 3.11 is recommended:
+
+```powershell
+python -m venv .venv
+.venv\Scripts\Activate.ps1
+pip install -r requirements.txt
+```
+
+The population raster is not distributed with this repository. Download a suitably licensed population GeoTIFF and set its path through an environment variable:
+
+```powershell
+$env:POP_RASTER_PATH = "D:\data\population.tif"
+```
+
+Typical execution order:
+
+```powershell
+python 10_batch_mainshocks.py
+python 11_batch_download.py
+python 12_batch_build_catalog.py
+python 03_fit_omori.py
+python 20_exposure_population.py
+python 30_join_and_plot.py
+python 31_robustness.py
+python 32_uncertainty_propagation.py
+python 34_within_mainshock_permutation.py
+python 35_scale_sensitivity.py
+python 37_mainshock_influence.py
+python 40_ml_groupkfold.py
+```
+
+Run the tests with:
+
+```powershell
+python -m unittest discover -s tests -v
+```
+
+## Data and Release Notes
+
+- Raw USGS event catalogs, the population raster, download caches, videos, and local QA artifacts are not included.
+- `config.py` contains no machine-specific path; the population raster is supplied through the `POP_RASTER_PATH` environment variable.
+- `out/` contains only derived summaries, bootstrap samples, and figures needed to support the report. Earthquake event IDs are public scientific identifiers rather than personal identifiers.
+
+## Data Sources
+
+- Earthquake catalog: [USGS Earthquake Catalog](https://earthquake.usgs.gov/earthquakes/search/)
+- Population data: WorldPop or an equivalently licensed population raster. Users must download the data separately and comply with its license and citation requirements.
+
+## Scope and Limitations
+
+This is an exploratory course research project. The number of mainshocks is small, subgroups are not fully independent, and population exposure is not a direct cause of earthquake physics. The repository demonstrates a reproducible data-fusion and robustness-analysis workflow; it is not intended for disaster prediction, risk pricing, or operational emergency decision-making.
+
+---
+
 # 川滇地区余震衰减参数与人口暴露度的多尺度关联分析
 
 本仓库包含一项面向“大数据与灾害治理”场景的可复现实验：使用 USGS 地震目录估计川滇地区主震序列的 Omori-Utsu 衰减参数 `p`，结合人口栅格计算 10、25、50 km 多尺度人口暴露度，并通过固定效应回归、组内置换检验、不确定性传播和 Leave-One-Group-Out（LOGO）评估检验关联的稳健性。
@@ -80,7 +174,6 @@ python -m unittest discover -s tests -v
 - 原始 USGS 事件目录、人口栅格、下载缓存、交互视频和本机 QA 文件未提交。
 - `config.py` 不含本机路径，人口栅格位置通过 `POP_RASTER_PATH` 环境变量传入。
 - `out/` 仅保留支撑报告结论的派生汇总、bootstrap 抽样和图件；地震事件 ID 是公开科学标识，不是个人标识。
-- 报告 PDF 不含姓名、学号、联系方式、本机路径或自定义作者元数据。
 
 ## 数据来源
 
